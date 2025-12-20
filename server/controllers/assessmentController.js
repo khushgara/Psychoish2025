@@ -62,40 +62,47 @@ const assessmentController = {
   // Calculate score based on assessment type
   calculateScore(assessmentType, responses) {
     let score = 0;
-
     switch (assessmentType) {
       case "mood":
       case "anxiety":
+      case "wellbeing":
+      case "ybocs":
+      case "phq":
+      case "ryffFull":
         // Sum all response values
-        score = responses.reduce((sum, response) => sum + response.value, 0);
+        score = responses.reduce((sum, response) => sum + (parseInt(response.value) || 0), 0);
         break;
 
       case "dast10":
         // Yes/No scoring with reversed questions
         responses.forEach((response, index) => {
           const question = assessmentQuestions.dast10.questions[index];
+          const val = String(response.value).toLowerCase();
           if (question.reversed) {
-            // For reversed questions, "no" scores 1
-            score += response.value === "no" ? 1 : 0;
+            // For reversed questions, "no" or 0 scores 1
+            score += (val === "no" || val === "0") ? 1 : 0;
           } else {
-            // For normal questions, "yes" scores 1
-            score += response.value === "yes" ? 1 : 0;
+            // For normal questions, "yes" or 1 scores 1
+            score += (val === "yes" || val === "1") ? 1 : 0;
           }
         });
         break;
 
-      case "wellbeing":
-        // Sum all response values (already includes reversed scoring in the data)
-        score = responses.reduce((sum, response) => sum + response.value, 0);
+      case "sbqr":
+        // Sum values (values are 1-based indices or specific weights)
+        // SBQ-R values in questions.js are directly the score weights (1, 2, 3...)
+        score = responses.reduce((sum, response) => sum + (parseInt(response.value) || 0), 0);
         break;
 
-      case "ybocs":
-        // Sum all response values
-        score = responses.reduce((sum, response) => sum + response.value, 0);
+      case "sleepQuality":
+        // Sum values
+        score = responses.reduce((sum, response) => sum + (parseInt(response.value) || 0), 0);
         break;
 
       default:
-        throw new Error("Unknown assessment type");
+        // Fallback for unknown types or just sum them if structure assumes numeric values
+        console.warn(`Unknown assessment type "${assessmentType}" in calculation, defaulting to sum.`);
+        score = responses.reduce((sum, response) => sum + (parseInt(response.value) || 0), 0);
     }
 
     return score;
@@ -124,7 +131,7 @@ const assessmentController = {
       }
 
       // Calculate score
-      const score = this.calculateScore(assessmentType, responses);
+      const score = assessmentController.calculateScore(assessmentType, responses);
 
       // Get interpretation
       const interpretation = ResultModel.getInterpretation(

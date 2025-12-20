@@ -52,6 +52,47 @@ export const verifyToken = (req, res, next) => {
   }
 };
 
+// Verify JWT token if present, but don't error if missing
+export const verifyTokenOptional = (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return next(); // No token, proceed as guest
+    }
+
+    const token = authHeader.substring(7);
+
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+      if (err) {
+        // If token is invalid (expired/bad), we have a choice:
+        // 1. Return 401 (strict) - helps if user thinks they are logged in
+        // 2. Proceed as guest (lenient) - booking succeeds but not linked
+        // Let's go with strict if a token was attempted.
+        if (err.name === "TokenExpiredError") {
+          console.warn("Token expired for optional auth request");
+        } else {
+          console.warn("Invalid token for optional auth request");
+        }
+        // Choosing to proceed as guest to ensure booking doesn't fail for UX, 
+        // given the "emergency" nature of some consultations. 
+        // But maybe logging it is enough.
+        return next(); 
+      }
+
+      req.user = {
+        id: decoded.id,
+        email: decoded.email,
+      };
+
+      next();
+    });
+  } catch (error) {
+    console.error("Optional auth middleware error:", error);
+    next();
+  }
+};
+
 // Optional: Role-based access control (for future use)
 export const requireRole = (roles) => {
   return (req, res, next) => {

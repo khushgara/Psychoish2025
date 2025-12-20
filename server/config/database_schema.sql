@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS user_profiles (
 CREATE TABLE IF NOT EXISTS assessments (
   id INT PRIMARY KEY AUTO_INCREMENT,
   user_id INT NOT NULL,
-  assessment_type ENUM('mood', 'dast10', 'anxiety', 'wellbeing', 'ybocs') NOT NULL,
+  assessment_type VARCHAR(100) NOT NULL,
   responses JSON NOT NULL,
   score INT NOT NULL,
   interpretation VARCHAR(100) NOT NULL,
@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS consultation_bookings (
   name VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL,
   phone VARCHAR(20) NOT NULL,
-  consultation_type ENUM('therapy', 'counseling', 'assessment', 'general') NOT NULL,
+  consultation_type VARCHAR(100) NOT NULL,
   description TEXT,
   status ENUM('pending', 'confirmed', 'completed', 'cancelled') DEFAULT 'pending',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

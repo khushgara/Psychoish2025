@@ -22,7 +22,7 @@ const AssessmentModel = {
   async findById(id) {
     const query = "SELECT * FROM assessments WHERE id = ?";
     const [rows] = await db.execute(query, [id]);
-    if (rows[0]) {
+    if (rows[0] && typeof rows[0].responses === 'string') {
       rows[0].responses = JSON.parse(rows[0].responses);
     }
     return rows[0];
@@ -43,7 +43,7 @@ const AssessmentModel = {
     
     return rows.map(row => ({
       ...row,
-      responses: JSON.parse(row.responses)
+      responses: typeof row.responses === 'string' ? JSON.parse(row.responses) : row.responses
     }));
   },
 
@@ -56,7 +56,7 @@ const AssessmentModel = {
       LIMIT 1
     `;
     const [rows] = await db.execute(query, [userId, assessmentType]);
-    if (rows[0]) {
+    if (rows[0] && typeof rows[0].responses === 'string') {
       rows[0].responses = JSON.parse(rows[0].responses);
     }
     return rows[0];

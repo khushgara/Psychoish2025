@@ -58,17 +58,17 @@ const UserModel = {
     const existing = await this.getProfile(userId);
 
     if (existing) {
-      const query = `
+       const query = `
         UPDATE user_profiles 
         SET phone = ?, date_of_birth = ?, gender = ?, bio = ?, avatar_url = ?
         WHERE user_id = ?
       `;
       const [result] = await db.execute(query, [
-        phone,
-        date_of_birth,
-        gender,
-        bio,
-        avatar_url,
+        phone || null,
+        date_of_birth || null,
+        gender || null,
+        bio || null,
+        avatar_url || null,
         userId,
       ]);
       return result.affectedRows > 0;
@@ -79,11 +79,11 @@ const UserModel = {
       `;
       const [result] = await db.execute(query, [
         userId,
-        phone,
-        date_of_birth,
-        gender,
-        bio,
-        avatar_url,
+        phone || null,
+        date_of_birth || null,
+        gender || null,
+        bio || null,
+        avatar_url || null,
       ]);
       return result.insertId;
     }

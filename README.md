@@ -1,172 +1,107 @@
-# Psychoish
+# Psychoish - Mental Wellness Platform 🧠
 
-A comprehensive mental health assessment platform built with the MERN stack (MySQL, Express, React, Node.js). This application allows users to take various psychological assessments, view interpretations, and track their well-being over time.
+Psychoish is a comprehensive MERN stack application designed to help users track their mental wellness, take specialized psychological assessments, and book consultations with professionals.
 
-## Tech Stack
+## 🚀 Getting Started
 
-**Client:**
-*   React.js
-*   React Router
-*   Axios
-*   CSS (Custom/Vanilla)
+### Prerequisites
+- Node.js (v14 or higher)
+- MySQL Server
+- Git
 
-**Server:**
-*   Node.js
-*   Express.js
-*   MySQL2 (Database Driver)
-*   JWT (JSON Web Tokens) for Authentication
-*   Bcrypt for Password Hashing
+### Installation
 
-**Database:**
-*   MySQL
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/psychoish.git
+   cd psychoish
+   ```
 
----
+2. **Setup Backend**
+   ```bash
+   cd server
+   npm install
+   ```
+   - Create a `.env` file in the `server` directory with your database config:
+     ```
+     DB_HOST=localhost
+     DB_USER=root
+     DB_PASSWORD=yourpassword
+     DB_NAME=psychoish_db
+     JWT_SECRET=your_jwt_secret
+     PORT=5000
+     ```
+   - Run the server (this will automatically create database tables):
+     ```bash
+     npm start
+     ```
 
-## Prerequisites
+3. **Setup Frontend**
+   ```bash
+   cd client
+   npm install
+   npm start
+   ```
 
-Before running this project, ensuring you have the following installed:
-
-*   [Node.js](https://nodejs.org/) (v14 or higher)
-*   [MySQL](https://www.mysql.com/downloads/)
-*   [Git](https://git-scm.com/)
-
----
-
-## Installation & Setup
-
-### 1. Clone the Repository
-
-```bash
-git clone <your-repo-url>
-cd psychoish
-```
-
-### 2. Database Setup
-
-You need to set up a MySQL database. Open your MySQL client (Workbench, Command Line, etc.) and execute the following SQL commands to create the database and tables:
-
-```sql
--- Create Database
-CREATE DATABASE IF NOT EXISTS psychoish_db;
-USE psychoish_db;
-
--- Create Users Table
-CREATE TABLE IF NOT EXISTS users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Create User Profiles Table
-CREATE TABLE IF NOT EXISTS user_profiles (
-    user_id INT PRIMARY KEY,
-    phone VARCHAR(20),
-    date_of_birth DATE,
-    gender VARCHAR(50),
-    bio TEXT,
-    avatar_url VARCHAR(255),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
--- Create Assessments Table
-CREATE TABLE IF NOT EXISTS assessments (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    assessment_type VARCHAR(50) NOT NULL,
-    responses JSON NOT NULL,
-    score INT NOT NULL,
-    interpretation TEXT,
-    recommendations TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-```
-
-### 3. Server Configuration
-
-1.  Navigate to the server directory:
-    ```bash
-    cd server
-    ```
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
-3.  Create a `.env` file in the `server` directory based on the example:
-    ```bash
-    cp .env.example .env
-    ```
-    *(Or manually create `.env` and copy the content below)*
-
-4.  Edit `.env` and fill in your MySQL credentials:
-    ```env
-    # Database Configuration
-    DB_HOST=localhost
-    DB_USER=root
-    DB_PASSWORD=your_mysql_password  <-- CHANGE THIS
-    DB_NAME=psychoish_db
-
-    # JWT Secret
-    JWT_SECRET=some_secure_random_string
-
-    # Server Port
-    PORT=5000
-    ```
-
-### 4. Client Configuration
-
-1.  Navigate to the client directory:
-    ```bash
-    cd ../client
-    ```
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
+4. **Access the App**
+   - Open [http://localhost:3000](http://localhost:3000) to view the client.
+   - The server runs on `http://localhost:5000`.
 
 ---
 
-## Running the Application
+## 📊 Assessment Scoring Formulas
 
-You need to run both the backend server and the frontend client.
+Psychoish implements standard clinical scoring algorithms for various assessments.
 
-### Option 1: Run Separately (Recommended for Debugging)
+### 1. DAST-10 (Drug Abuse Screening Test)
+- **Structure**: 10 Yes/No questions.
+- **Scoring**:
+  - Each "Yes" answer = 1 point.
+  - Exception: Question 3 is reversed (No = 1 point).
+- **Interpretation**:
+  - **0**: None reported (Low)
+  - **1-2**: Low level (Low)
+  - **3-5**: Moderate level (Moderate)
+  - **6-8**: Substantial level (High)
+  - **9-10**: Severe level (Critical)
 
-**Terminal 1 (Server):**
-```bash
-cd server
-npm run dev
-# Server runs on http://localhost:5000
-```
+### 2. Mood Assessment (depression-like symptoms)
+- **Scoring**: Sum of scale values (1-5) for questions about mood, energy, and outlook.
+- **Interpretation**:
+  - **0-10**: Normal
+  - **11-16**: Mild mood disturbance
+  - **17-20**: Borderline clinical depression
+  - **21-30**: Moderate depression
+  - **31-40**: Severe depression
+  - **40+**: Extreme depression
 
-**Terminal 2 (Client):**
-```bash
-cd client
-npm start
-# Client runs on http://localhost:3000
-```
+### 3. GAD-7 (Anxiety)
+- **Scoring**: Sum of response values (0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day).
+- **Interpretation**:
+  - **0-21**: Low anxiety
+  - **22-35**: Moderate anxiety
+  - **36+**: Potentially concerning levels
 
-### Option 2: Run Concurrently (If configured)
+### 4. Y-BOCS (OCD)
+- **Scoring**: Sum of severity ratings for obsession and compulsion questions.
+- **Interpretation**:
+  - **0-13**: Mild symptoms
+  - **14-25**: Moderate symptoms
+  - **26-34**: Moderate-severe
+  - **35-40**: Severe symptoms
 
-If you have a configured script in the root package.json:
-```bash
-npm start
-``` 
-*(Note: Ensure required `concurrently` scripts are set up in the root package.json if you choose this method.)*
+### 5. SBQ-R (Suicide Behaviors Questionnaire-Revised)
+- **Structure**: 4 weighted questions.
+- **Scoring**: Sum of specific weightings per answer choice.
+- **Interpretation**:
+  - **0-6**: Low risk
+  - **7-11**: Moderate/High risk
+  - **12+**: Critical risk
 
 ---
 
-## API Endpoints (Overview)
-
-*   **Auth:**
-    *   `POST /api/users/register` - Register a new user
-    *   `POST /api/users/login` - Login user
-*   **User:**
-    *   `GET /api/users/profile` - Get user profile
-    *   `PUT /api/users/profile` - Update user profile
-*   **Assessments:**
-    *   `POST /api/assessments` - Save a new assessment
-    *   `GET /api/assessments/history` - Get user assessment history
-    *   `GET /api/assessments/stats` - Get assessment statistics
+## 🛠️ Tech Stack
+- **Frontend**: React.js, React Router, Context API
+- **Backend**: Node.js, Express.js
+- **Database**: MySQL (using `mysql2` driver)
+- **Authentication**: JWT (JSON Web Tokens)

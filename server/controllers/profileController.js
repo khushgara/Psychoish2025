@@ -18,13 +18,17 @@ const profileController = {
 
       res.json({
         success: true,
-        user: {
+        data: {
           id: user.id,
           name: user.name,
           email: user.email,
           created_at: user.created_at,
+          phone: profile?.phone || "",
+          date_of_birth: profile?.date_of_birth || "",
+          gender: profile?.gender || "",
+          bio: profile?.bio || "",
+          avatar_url: profile?.avatar_url || "",
         },
-        profile: profile || {},
       });
     } catch (error) {
       console.error("❌ Get profile error:", error);
@@ -39,20 +43,24 @@ const profileController = {
   async updateProfile(req, res) {
     try {
       const userId = req.user.id;
-      const { name, phone, date_of_birth, gender, bio, avatar_url } = req.body;
+      const { name, email, phone, date_of_birth, gender, bio, avatar_url } = req.body;
 
-      // Update user name if provided
-      if (name) {
-        await UserModel.update(userId, { name });
+      // Update user name and email if provided
+      const userUpdates = {};
+      if (name) userUpdates.name = name;
+      if (email) userUpdates.email = email;
+      
+      if (Object.keys(userUpdates).length > 0) {
+        await UserModel.update(userId, userUpdates);
       }
 
       // Update profile
       const profileData = {
-        phone,
-        date_of_birth,
-        gender,
-        bio,
-        avatar_url,
+        phone: phone || null,
+        date_of_birth: date_of_birth || null,
+        gender: gender || null,
+        bio: bio || null,
+        avatar_url: avatar_url || null,
       };
 
       await UserModel.updateProfile(userId, profileData);

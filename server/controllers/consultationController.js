@@ -1,4 +1,5 @@
-import db from "../config/db.js";
+import ConsultationModel from "../models/consultationModel.js";
+import sheetService from "../services/sheetService.js";
 
 const consultationController = {
   // Book consultation
@@ -15,28 +16,31 @@ const consultationController = {
         });
       }
 
-      // Insert booking
-      const query = `
-        INSERT INTO consultation_bookings 
-        (user_id, name, email, phone, consultation_type, description, status)
-        VALUES (?, ?, ?, ?, ?, ?, 'pending')
-      `;
-
-      const [result] = await db.execute(query, [
-        userId,
+      // Create booking using Model
+      const bookingId = await ConsultationModel.create({
+        user_id: userId,
         name,
         email,
         phone,
         consultation_type,
-        description || null,
-      ]);
+        description
+      });
 
       console.log(`✅ Consultation booked: ${consultation_type} for ${name}`);
+
+      // Add to Google Sheet
+      await sheetService.appendConsultation({
+        name,
+        email,
+        phone,
+        consultation_type,
+        description,
+      });
 
       res.status(201).json({
         success: true,
         message: "Consultation booked successfully. We will contact you soon!",
-        bookingId: result.insertId,
+        bookingId: bookingId,
       });
     } catch (error) {
       console.error("❌ Book consultation error:", error);
@@ -52,13 +56,7 @@ const consultationController = {
     try {
       const userId = req.user.id;
 
-      const query = `
-        SELECT * FROM consultation_bookings 
-        WHERE user_id = ?
-        ORDER BY created_at DESC
-      `;
-
-      const [bookings] = await db.execute(query, [userId]);
+      const bookings = await ConsultationModel.findByUserId(userId);
 
       res.json({
         success: true,
