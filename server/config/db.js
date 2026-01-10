@@ -1,30 +1,31 @@
-import mysql from "mysql2";
+import mysql from "mysql2/promise";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-// Create connection pool for better performance
+console.log("DB_HOST:", process.env.DB_HOST);
+console.log("DB_PORT:", process.env.DB_PORT);
+
 const pool = mysql.createPool({
-  host: process.env.DB_HOST || "localhost",
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASSWORD || "khushagra007",
-  database: process.env.DB_NAME || "psychoish_db",
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
+  host: "mysql.railway.internal",        // MUST be mysql.railway.internal
+  user: "root",
+  password: "UxyakiyEUGJaqenzGdsMNEiJSsJmgbaq",
+  database: "railway",
+  port: 3306 // MUST be 3306
+  // waitForConnections: true,
+  // connectionLimit: 10,
+  // queueLimit: 0,
 });
 
-// Get promise-based connection
-const db = pool.promise();
-
-// Test connection
-pool.getConnection((err, connection) => {
-  if (err) {
-    console.error("❌ Database connection failed:", err.message);
-  } else {
+// Test connection immediately
+(async () => {
+  try {
+    const conn = await pool.getConnection();
     console.log("✅ Connected to MySQL Database");
-    connection.release();
+    conn.release();
+  } catch (err) {
+    console.error("❌ Database connection failed:", err);
   }
-});
+})();
 
-export default db;
+export default pool;

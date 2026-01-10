@@ -6,7 +6,7 @@ import assessmentRoutes from "./routes/assessmentRoutes.js";
 import resultRoutes from "./routes/resultRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
 import consultationRoutes from "./routes/consultationRoutes.js";
-import "./config/db.js"; // Initialize database connection
+import db from "./config/db.js"; // Initialize database connection
 
 dotenv.config();
 
@@ -53,3 +53,12 @@ app.listen(PORT, () =>
   console.log(`🚀 Server running on http://localhost:${PORT}`)
 );
 
+app.get("/db-test", async (req, res) => {
+  try {
+    await db.query("SELECT 1");
+    res.json({ success: true });
+  } catch (err) {
+    console.error("DB TEST ERROR:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
