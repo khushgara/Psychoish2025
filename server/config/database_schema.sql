@@ -79,3 +79,11 @@ CREATE TABLE IF NOT EXISTS blog_posts (
   INDEX idx_slug (slug),
   INDEX idx_published_date (published_date)
 );
+
+-- Subscribers table (for newsletter marketing)
+CREATE TABLE IF NOT EXISTS subscribers (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  subscribed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+

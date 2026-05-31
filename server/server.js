@@ -6,13 +6,15 @@ import assessmentRoutes from "./routes/assessmentRoutes.js";
 import resultRoutes from "./routes/resultRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
 import consultationRoutes from "./routes/consultationRoutes.js";
-import db from "./config/db.js"; // Initialize database connection
+import newsletterRoutes from "./routes/newsletterRoutes.js";
+import chatRoutes from "./routes/chatRoutes.js";
+import db from "./config/db.js";
 
 dotenv.config();
 
 const app = express();
 
-// Middleware
+// Middleware configurations
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -23,6 +25,8 @@ app.use("/api/assessments", assessmentRoutes);
 app.use("/api/results", resultRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/consultations", consultationRoutes);
+app.use("/api/newsletter", newsletterRoutes);
+app.use("/api/chat", chatRoutes);
 
 // Test route
 app.get("/", (req, res) => {
@@ -35,6 +39,7 @@ app.get("/", (req, res) => {
       results: "/api/results",
       profile: "/api/profile",
       consultations: "/api/consultations",
+      newsletter: "/api/newsletter",
     },
   });
 });
@@ -62,3 +67,5 @@ app.get("/db-test", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+
