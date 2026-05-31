@@ -19,7 +19,7 @@ const ALLOWED_ORIGINS = [
   /^http:\/\/localhost(:\d+)?$/,           // any localhost port
   /^http:\/\/127\.0\.0\.1(:\d+)?$/,        // 127.0.0.1 variants
   "https://psychoish-frontend.vercel.app", // Vercel deploy (update if different)
-  "https://psychoish-backend-production-5efd.up.railway.app", // same-domain calls
+  "https://psychoish-backend.onrender.com", // Render backend (same-domain calls)
   // Pull from env so Railway/any host can inject the real frontend URL:
   process.env.FRONTEND_URL,
 ].filter(Boolean); // remove undefined if FRONTEND_URL not set
