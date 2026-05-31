@@ -14,8 +14,28 @@ dotenv.config();
 
 const app = express();
 
-// Middleware configurations
-app.use(cors());
+// CORS — allow local dev and the production frontend (no config changes needed)
+const ALLOWED_ORIGINS = [
+  /^http:\/\/localhost(:\d+)?$/,           // any localhost port
+  /^http:\/\/127\.0\.0\.1(:\d+)?$/,        // 127.0.0.1 variants
+  "https://psychoish-frontend.vercel.app", // Vercel deploy (update if different)
+  "https://psychoish-backend-production-5efd.up.railway.app", // same-domain calls
+  // Pull from env so Railway/any host can inject the real frontend URL:
+  process.env.FRONTEND_URL,
+].filter(Boolean); // remove undefined if FRONTEND_URL not set
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (curl, Postman, server-to-server)
+    if (!origin) return callback(null, true);
+    const allowed = ALLOWED_ORIGINS.some((o) =>
+      typeof o === "string" ? o === origin : o.test(origin)
+    );
+    if (allowed) return callback(null, true);
+    callback(new Error(`CORS: origin not allowed — ${origin}`));
+  },
+  credentials: true,
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
