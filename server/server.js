@@ -23,8 +23,6 @@ const ALLOWED_ORIGINS = [
   /^http:\/\/localhost(:\d+)?$/,           // any localhost port
   /^http:\/\/127\.0\.0\.1(:\d+)?$/,        // 127.0.0.1 variants
   "https://peachpuff-trout-823444.hostingersite.com", // Hostinger live site
-  "https://psychoish-frontend.vercel.app", // Vercel deploy (if still in use)
-  "https://psychoish-backend.onrender.com", // Render backend
   // Pull from env so any host can inject the real frontend URL:
   process.env.FRONTEND_URL,
 ].filter(Boolean);
