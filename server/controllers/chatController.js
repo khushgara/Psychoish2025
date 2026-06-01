@@ -1,6 +1,8 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// NOTE: genAI is initialized lazily inside the handler so a missing
+// GEMINI_API_KEY doesn't crash the whole server at startup.
+let genAI = null;
 
 /* ── Mental health system prompt ──────────────────────────────── */
 const SYSTEM_PROMPT = `You are Psy, a compassionate and knowledgeable mental health support assistant for Psychoish — a mental wellness platform. 
@@ -43,7 +45,12 @@ export const chatWithAI = async (req, res) => {
     }
 
     if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({ success: false, message: "AI service not configured" });
+      return res.status(503).json({ success: false, message: "AI service not configured" });
+    }
+
+    // Lazy-init: create only once, reuse on subsequent calls
+    if (!genAI) {
+      genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     }
 
     const sid = sessionId || "anonymous";
