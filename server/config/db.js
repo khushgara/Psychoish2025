@@ -1,7 +1,4 @@
 import mongoose from "mongoose";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const connectDB = async () => {
   // Hostinger injects MONGODB_URI automatically when Atlas is linked.

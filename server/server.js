@@ -1,5 +1,7 @@
+// ⚠️  MUST be first import — loads .env and validates required variables
+import "./config/dotenv.js";
+
 import express from "express";
-import dotenv from "dotenv";
 import cors from "cors";
 import mongoose from "mongoose";
 import authRoutes from "./routes/authRoutes.js";
@@ -10,8 +12,6 @@ import consultationRoutes from "./routes/consultationRoutes.js";
 import newsletterRoutes from "./routes/newsletterRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import connectDB from "./config/db.js";
-
-dotenv.config();
 
 // ── Startup ────────────────────────────────────────────────────────────────────
 // IMPORTANT: await DB connection BEFORE accepting any requests.
