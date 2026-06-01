@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import mongoose from "mongoose";
 import authRoutes from "./routes/authRoutes.js";
 import assessmentRoutes from "./routes/assessmentRoutes.js";
 import resultRoutes from "./routes/resultRoutes.js";
@@ -8,9 +9,12 @@ import profileRoutes from "./routes/profileRoutes.js";
 import consultationRoutes from "./routes/consultationRoutes.js";
 import newsletterRoutes from "./routes/newsletterRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
-import db from "./config/db.js";
+import connectDB from "./config/db.js";
 
 dotenv.config();
+
+// Connect to MongoDB
+connectDB();
 
 const app = express();
 
@@ -80,12 +84,11 @@ app.listen(PORT, () =>
 
 app.get("/db-test", async (req, res) => {
   try {
-    await db.query("SELECT 1");
-    res.json({ success: true });
+    const state = mongoose.connection.readyState;
+    // 1 = connected
+    res.json({ success: state === 1, mongoState: state });
   } catch (err) {
     console.error("DB TEST ERROR:", err);
     res.status(500).json({ error: err.message });
   }
 });
-
-

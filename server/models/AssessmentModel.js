@@ -1,88 +1,78 @@
-import db from "../config/db.js";
+import mongoose from "mongoose";
 
+// ── Schema ────────────────────────────────────────────────────────────────────
+const assessmentSchema = new mongoose.Schema(
+  {
+    user_id: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    assessment_type: { type: String, required: true },
+    responses: { type: mongoose.Schema.Types.Mixed, required: true },
+    score: { type: Number, required: true },
+    interpretation: { type: String, required: true },
+    recommendations: { type: String, default: null },
+  },
+  { timestamps: true }
+);
+
+// Indexes to mirror the SQL indexes
+assessmentSchema.index({ user_id: 1, createdAt: -1 });
+assessmentSchema.index({ assessment_type: 1 });
+
+const Assessment = mongoose.model("Assessment", assessmentSchema);
+
+// ── Model API ─────────────────────────────────────────────────────────────────
 const AssessmentModel = {
-  // Create new assessment
+  // Create new assessment — returns new document id
   async create(userId, assessmentType, responses, score, interpretation, recommendations) {
-    const query = `
-      INSERT INTO assessments (user_id, assessment_type, responses, score, interpretation, recommendations)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `;
-    const [result] = await db.execute(query, [
-      userId,
-      assessmentType,
-      JSON.stringify(responses),
+    const doc = await Assessment.create({
+      user_id: userId,
+      assessment_type: assessmentType,
+      responses,
       score,
       interpretation,
-      recommendations,
-    ]);
-    return result.insertId;
+      recommendations: recommendations || null,
+    });
+    return doc._id.toString();
   },
 
   // Get assessment by ID
   async findById(id) {
-    const query = "SELECT * FROM assessments WHERE id = ?";
-    const [rows] = await db.execute(query, [id]);
-    if (rows[0] && typeof rows[0].responses === 'string') {
-      rows[0].responses = JSON.parse(rows[0].responses);
-    }
-    return rows[0];
+    return Assessment.findById(id).lean();
   },
 
-  // Get user's assessment history
+  // Get user's assessment history (optionally filtered by type)
   async getUserAssessments(userId, assessmentType = null) {
-    let query = "SELECT * FROM assessments WHERE user_id = ?";
-    const params = [userId];
-
-    if (assessmentType) {
-      query += " AND assessment_type = ?";
-      params.push(assessmentType);
-    }
-
-    query += " ORDER BY created_at DESC";
-    const [rows] = await db.execute(query, params);
-    
-    return rows.map(row => ({
-      ...row,
-      responses: typeof row.responses === 'string' ? JSON.parse(row.responses) : row.responses
-    }));
+    const filter = { user_id: userId };
+    if (assessmentType) filter.assessment_type = assessmentType;
+    return Assessment.find(filter).sort({ createdAt: -1 }).lean();
   },
 
-  // Get latest assessment by type
+  // Get the latest assessment of a specific type
   async getLatestByType(userId, assessmentType) {
-    const query = `
-      SELECT * FROM assessments 
-      WHERE user_id = ? AND assessment_type = ?
-      ORDER BY created_at DESC
-      LIMIT 1
-    `;
-    const [rows] = await db.execute(query, [userId, assessmentType]);
-    if (rows[0] && typeof rows[0].responses === 'string') {
-      rows[0].responses = JSON.parse(rows[0].responses);
-    }
-    return rows[0];
+    return Assessment.findOne({ user_id: userId, assessment_type: assessmentType })
+      .sort({ createdAt: -1 })
+      .lean();
   },
 
-  // Get assessment statistics
+  // Get per-type statistics for a user
   async getStats(userId) {
-    const query = `
-      SELECT 
-        assessment_type,
-        COUNT(*) as count,
-        AVG(score) as avg_score,
-        MAX(created_at) as last_taken
-      FROM assessments
-      WHERE user_id = ?
-      GROUP BY assessment_type
-    `;
-    const [rows] = await db.execute(query, [userId]);
-    return rows;
+    return Assessment.aggregate([
+      { $match: { user_id: new mongoose.Types.ObjectId(userId) } },
+      {
+        $group: {
+          _id: "$assessment_type",
+          count: { $sum: 1 },
+          avg_score: { $avg: "$score" },
+          last_taken: { $max: "$createdAt" },
+        },
+      },
+      { $project: { assessment_type: "$_id", count: 1, avg_score: 1, last_taken: 1, _id: 0 } },
+    ]);
   },
 
-  // Delete assessment
+  // Delete an assessment (must belong to the requesting user)
   async delete(id, userId) {
-    const query = "DELETE FROM assessments WHERE id = ? AND user_id = ?";
-    const [result] = await db.execute(query, [id, userId]);
-    return result.affectedRows > 0;
+    const result = await Assessment.deleteOne({ _id: id, user_id: userId });
+    return result.deletedCount > 0;
   },
 };
 

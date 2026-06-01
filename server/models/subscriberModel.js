@@ -1,26 +1,34 @@
-import db from "../config/db.js";
+import mongoose from "mongoose";
 
+// ── Schema ────────────────────────────────────────────────────────────────────
+const subscriberSchema = new mongoose.Schema(
+  {
+    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+  },
+  {
+    timestamps: { createdAt: "subscribed_at", updatedAt: false },
+  }
+);
+
+const Subscriber = mongoose.model("Subscriber", subscriberSchema);
+
+// ── Model API ─────────────────────────────────────────────────────────────────
 const SubscriberModel = {
-  // Add a new subscriber
+  // Add a new subscriber — returns the new document's id
   async create(email) {
-    const query = "INSERT INTO subscribers (email) VALUES (?)";
-    const [result] = await db.execute(query, [email]);
-    return result.insertId;
+    const doc = await Subscriber.create({ email });
+    return doc._id.toString();
   },
 
   // Find subscriber by email
   async findByEmail(email) {
-    const query = "SELECT * FROM subscribers WHERE email = ?";
-    const [rows] = await db.execute(query, [email]);
-    return rows[0];
+    return Subscriber.findOne({ email }).lean();
   },
 
-  // Get all subscribers
+  // Get all subscribers ordered by newest first
   async getAll() {
-    const query = "SELECT * FROM subscribers ORDER BY subscribed_at DESC";
-    const [rows] = await db.execute(query);
-    return rows;
-  }
+    return Subscriber.find().sort({ subscribed_at: -1 }).lean();
+  },
 };
 
 export default SubscriberModel;

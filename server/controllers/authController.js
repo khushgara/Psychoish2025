@@ -45,7 +45,7 @@ const authController = {
       // Create new user
       const userId = await UserModel.create(name, email, hashedPassword);
 
-      // Generate JWT Token
+      // Generate JWT Token  (userId is already a string from UserModel.create)
       const token = jwt.sign(
         { id: userId, email },
         JWT_SECRET,
@@ -99,9 +99,10 @@ const authController = {
         });
       }
 
-      // Generate JWT Token
+      // Generate JWT Token — use _id (ObjectId string) not .id which is undefined on lean()
+      const mongoId = user._id.toString();
       const token = jwt.sign(
-        { id: user.id, email: user.email },
+        { id: mongoId, email: user.email },
         JWT_SECRET,
         { expiresIn: "24h" }
       );
@@ -111,7 +112,7 @@ const authController = {
         success: true,
         message: "Login successful", 
         token,
-        user: { id: user.id, name: user.name, email: user.email }
+        user: { id: mongoId, name: user.name, email: user.email }
       });
     } catch (error) {
       console.error("❌ Login error:", error);

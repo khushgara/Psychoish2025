@@ -1,45 +1,53 @@
-import db from "../config/db.js";
+import mongoose from "mongoose";
 
+// ── Schema ────────────────────────────────────────────────────────────────────
+const consultationSchema = new mongoose.Schema(
+  {
+    user_id: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+    name: { type: String, required: true },
+    email: { type: String, required: true },
+    phone: { type: String, required: true },
+    consultation_type: { type: String, required: true },
+    description: { type: String, default: null },
+    status: {
+      type: String,
+      enum: ["pending", "confirmed", "completed", "cancelled"],
+      default: "pending",
+    },
+  },
+  { timestamps: true }
+);
+
+consultationSchema.index({ user_id: 1 });
+consultationSchema.index({ status: 1 });
+
+const Consultation = mongoose.model("Consultation", consultationSchema);
+
+// ── Model API ─────────────────────────────────────────────────────────────────
 const ConsultationModel = {
-  // Create new consultation booking
+  // Create a new booking — returns the new document's id
   async create(bookingData) {
     const { user_id, name, email, phone, consultation_type, description } = bookingData;
-    
-    const query = `
-      INSERT INTO consultation_bookings 
-      (user_id, name, email, phone, consultation_type, description, status)
-      VALUES (?, ?, ?, ?, ?, ?, 'pending')
-    `;
-
-    const [result] = await db.execute(query, [
-      user_id || null,
+    const doc = await Consultation.create({
+      user_id: user_id || null,
       name,
       email,
       phone,
       consultation_type,
-      description || null,
-    ]);
-    
-    return result.insertId;
+      description: description || null,
+    });
+    return doc._id.toString();
   },
 
-  // Get bookings by user ID
+  // Get all bookings for a user
   async findByUserId(userId) {
-    const query = `
-      SELECT * FROM consultation_bookings 
-      WHERE user_id = ?
-      ORDER BY created_at DESC
-    `;
-    const [rows] = await db.execute(query, [userId]);
-    return rows;
+    return Consultation.find({ user_id: userId }).sort({ createdAt: -1 }).lean();
   },
 
-  // Get booking by ID
+  // Get a single booking by ID
   async findById(id) {
-    const query = "SELECT * FROM consultation_bookings WHERE id = ?";
-    const [rows] = await db.execute(query, [id]);
-    return rows[0];
-  }
+    return Consultation.findById(id).lean();
+  },
 };
 
 export default ConsultationModel;

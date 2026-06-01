@@ -19,10 +19,10 @@ const profileController = {
       res.json({
         success: true,
         data: {
-          id: user.id,
+          id: user._id.toString(),
           name: user.name,
           email: user.email,
-          created_at: user.created_at,
+          created_at: user.createdAt,
           phone: profile?.phone || "",
           date_of_birth: profile?.date_of_birth || "",
           gender: profile?.gender || "",
