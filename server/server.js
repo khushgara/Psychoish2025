@@ -26,20 +26,27 @@ const startServer = async () => {
     /^http:\/\/localhost(:\d+)?$/,
     /^http:\/\/127\.0\.0\.1(:\d+)?$/,
     "https://peachpuff-trout-823444.hostingersite.com",
+    "https://psychoish.khushagra.in",
     process.env.FRONTEND_URL,
   ].filter(Boolean);
 
-  app.use(cors({
+  const corsOptions = {
     origin: (origin, callback) => {
+      // Allow server-to-server requests (no origin header)
       if (!origin) return callback(null, true);
       const allowed = ALLOWED_ORIGINS.some((o) =>
         typeof o === "string" ? o === origin : o.test(origin)
       );
       if (allowed) return callback(null, true);
-      callback(new Error(`CORS: origin not allowed — ${origin}`));
+      // Return 403, not throw — throwing causes 500 on OPTIONS
+      return callback(null, false);
     },
     credentials: true,
-  }));
+  };
+
+  // Handle OPTIONS preflight BEFORE any other middleware
+  app.options("*", cors(corsOptions));
+  app.use(cors(corsOptions));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
