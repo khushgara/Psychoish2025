@@ -8,10 +8,9 @@ dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this";
 
 const authController = {
-  // User Signup
   async signup(req, res) {
     console.log("📩 Received signup request:", req.body);
-    const { name, email, password, confirmPassword } = req.body;
+    const { name, email, password, confirmPassword, phone, date_of_birth, gender } = req.body;
 
     // Basic validation
     if (!name || !email || !password || !confirmPassword) {
@@ -44,6 +43,17 @@ const authController = {
 
       // Create new user
       const userId = await UserModel.create(name, email, hashedPassword);
+
+      // Save optional profile data if provided
+      if (phone || date_of_birth || gender) {
+        await UserModel.updateProfile(userId, {
+          phone: phone || null,
+          date_of_birth: date_of_birth || null,
+          gender: gender || null,
+          bio: null,
+          avatar_url: null,
+        });
+      }
 
       // Generate JWT Token  (userId is already a string from UserModel.create)
       const token = jwt.sign(

@@ -56,7 +56,18 @@ const consultationController = {
     try {
       const userId = req.user.id;
 
-      const bookings = await ConsultationModel.findByUserId(userId);
+      const rawBookings = await ConsultationModel.findByUserId(userId);
+
+      const bookings = rawBookings.map((b) => ({
+        id: b._id.toString(),
+        name: b.name,
+        email: b.email,
+        phone: b.phone,
+        consultation_type: b.consultation_type,
+        description: b.description,
+        status: b.status,
+        created_at: b.createdAt,
+      }));
 
       res.json({
         success: true,

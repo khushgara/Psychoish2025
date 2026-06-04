@@ -220,7 +220,7 @@ const assessmentController = {
       }
 
       // Verify ownership
-      if (assessment.user_id !== userId) {
+      if (assessment.user_id.toString() !== userId) {
         return res.status(403).json({
           success: false,
           message: "Unauthorized access",

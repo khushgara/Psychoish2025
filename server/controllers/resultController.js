@@ -18,7 +18,7 @@ const resultController = {
       }
 
       // Verify ownership
-      if (assessment.user_id !== userId) {
+      if (assessment.user_id.toString() !== userId) {
         return res.status(403).json({
           success: false,
           message: "Unauthorized access",
@@ -73,11 +73,11 @@ const resultController = {
         );
 
         return {
-          id: assessment.id,
+          id: assessment._id.toString(),
           type: assessment.assessment_type,
           score: assessment.score,
           interpretation,
-          date: assessment.created_at,
+          date: assessment.createdAt,
         };
       });
 

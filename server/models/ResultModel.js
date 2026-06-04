@@ -346,9 +346,14 @@ const ResultModel = {
     );
 
     return {
-      ...assessment,
+      id: assessment._id.toString(),
+      assessmentType: assessment.assessment_type,
+      score: assessment.score,
+      responses: assessment.responses,
       interpretation,
       recommendations,
+      createdAt: assessment.createdAt,
+      updatedAt: assessment.updatedAt,
     };
   },
 
@@ -373,11 +378,11 @@ const ResultModel = {
     // Get 5 most recent assessments
     const recent = await AssessmentModel.getUserAssessments(userId);
     summary.recentAssessments = recent.slice(0, 5).map((assessment) => ({
-      id: assessment.id,
+      id: assessment._id.toString(),
       type: assessment.assessment_type,
       score: assessment.score,
       interpretation: assessment.interpretation,
-      date: assessment.created_at,
+      date: assessment.createdAt,
     }));
 
     return summary;

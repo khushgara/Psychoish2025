@@ -127,3 +127,26 @@ export const clearSession = (req, res) => {
   }
   res.json({ success: true });
 };
+
+/* Returns a summary of recent in-memory sessions (for auth users) */
+export const getChatHistory = (req, res) => {
+  // In-memory only — no DB persistence yet
+  // Build a lightweight list of all live sessions with their first user message
+  const sessionList = [];
+  for (const [sid, messages] of sessions.entries()) {
+    if (messages.length > 0) {
+      const firstUser = messages.find((m) => m.role === "user");
+      sessionList.push({
+        _id: sid,
+        createdAt: new Date().toISOString(),
+        messages: messages.map((m) => ({
+          role: m.role === "model" ? "assistant" : m.role,
+          content: m.text,
+        })),
+        preview: firstUser?.text?.slice(0, 60) || "Chat session",
+      });
+    }
+  }
+  // Return most recent first (reversed)
+  res.json({ success: true, sessions: sessionList.reverse() });
+};
